@@ -4,8 +4,9 @@ import com.microsoftwo.jwttest.email.config.RedisUtil;
 import com.microsoftwo.jwttest.email.exception.CustomException;
 import com.microsoftwo.jwttest.user.aggregate.Role;
 import com.microsoftwo.jwttest.user.aggregate.User;
-import com.microsoftwo.jwttest.user.dto.UserDTO;
 import com.microsoftwo.jwttest.user.repository.UserRepository;
+import com.microsoftwo.jwttest.user.vo.SignupRequestVO;
+import jakarta.validation.Valid;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -34,30 +35,31 @@ public class UserServiceImpl implements UserService {
 
     // 기능 : 회원가입
     @Override
-    public String registUser(UserDTO userDTO) throws CustomException {
+    public String registerUser(@Valid SignupRequestVO signupRequestVO) throws CustomException {
         // 이메일 중복 체크
-        Optional<User> existingUser = userRepository.findByEmailOrNickname(userDTO.getEmail(), userDTO.getNickname());
+        Optional<User> existingUser = userRepository.findByEmailOrNickname(signupRequestVO.getEmail(),
+                signupRequestVO.getNickname());
         if (existingUser.isPresent()) {
-            log.error("회원가입 실패 - 이미 가입된 이메일 또는 닉네임: {}", userDTO.getEmail());
-            throw new CustomException("이미 가입된 이메일 또는 닉네임입니다.");
+            log.error("회원가입 실패 - 이미 존재하는 닉네임: {}", signupRequestVO.getNickname());
+            throw new CustomException("이미 존재하는 닉네임입니다.");
         }
 
         // 이메일 인증 여부 확인
-        if (!redisUtil.exists(userDTO.getEmail())) {
-            log.error("회원가입 실패 - 이메일 인증 필요: {}", userDTO.getEmail());
+        if (!redisUtil.exists(signupRequestVO.getEmail())) {
+            log.error("회원가입 실패 - 이메일 인증 필요: {}", signupRequestVO.getEmail());
             throw new CustomException("이메일 인증을 먼저 진행해 주세요.");
         }
 
-        log.info("회원가입 진행 - 이메일: {}, 닉네임: {}", userDTO.getEmail(), userDTO.getNickname());
+        log.info("회원가입 진행 - 이메일: {}, 닉네임: {}", signupRequestVO.getEmail(), signupRequestVO.getNickname());
 
         // 회원 저장 로직...
-        // DTO → Entity 변환
-        User newUser = modelMapper.map(userDTO, User.class);
-        newUser.setPassword(bCryptPasswordEncoder.encode(userDTO.getEncryptedPwd())); // 비밀번호 암호화
+        // DTO → Entity 변환 / 엔티티의 password 컬럼에 암호화 된 값을 추가
+        User newUser = modelMapper.map(signupRequestVO, User.class);
+        newUser.setPassword(bCryptPasswordEncoder.encode(signupRequestVO.getPassword())); // 비밀번호 암호화
         newUser.setRole(Role.USER);
 
         userRepository.save(newUser);
-        redisUtil.deleteData(userDTO.getEmail());
+        redisUtil.deleteData(signupRequestVO.getEmail());
 
         return "회원가입이 완료되었습니다.";
     }

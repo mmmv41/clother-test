@@ -18,13 +18,13 @@ public class EmailController {
 
     /* memo : 인증 코드 전송 */
     @PostMapping("/mailSend")
-    public String mailSend(@RequestBody @Valid EmailRequestVO emailDto) {
+    public String mailSend(@RequestBody @Valid EmailRequestVO emailRequestVO) {
 
         log.info("이메일 인증 요청 보냄");
-        log.info("Sending email : {}", emailDto);
+        log.info("Sending email : {}", emailRequestVO);
 //        System.out.println("이메일 인증 요청이 들어옴");
 //        System.out.println("이메일 인증 이메일 :" + emailDto.getEmail());
-        return mailService.joinEmail(emailDto.getEmail());
+        return mailService.joinEmail(emailRequestVO.getEmail());
     }
 
     /* memo : 인증 코드가 일치하는지 확인 */
