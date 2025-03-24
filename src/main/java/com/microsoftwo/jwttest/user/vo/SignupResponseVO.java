@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class SignupResponseVO {
     private String email;
-    private String
+    private String name;
+    private String userId;
 }
 

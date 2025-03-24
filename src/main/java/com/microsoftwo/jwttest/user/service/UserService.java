@@ -1,5 +1,6 @@
 package com.microsoftwo.jwttest.user.service;
 
+import com.microsoftwo.jwttest.security2.vo.LoginResponseVO;
 import com.microsoftwo.jwttest.user.vo.SignupRequestVO;
 import jakarta.validation.Valid;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -8,4 +9,8 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 public interface UserService extends UserDetailsService {
 
     String registerUser(@Valid SignupRequestVO signupRequestVO);
+
+    LoginResponseVO findMemberInfoById(Long userId);
+
+    LoginResponseVO findMemberInfoByEmail(String email);
 }

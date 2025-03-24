@@ -30,4 +30,10 @@ public class SignupRequestVO {
     private int height;
 
     private int weight;
+
+    public void setGender(String gender) {
+        if (gender != null) {
+            this.gender = gender.toUpperCase();  // 소문자를 대문자로 변환
+        }
+    }
 }

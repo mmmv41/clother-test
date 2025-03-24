@@ -8,16 +8,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
-@Slf4j
+@RequestMapping("/mail")
 public class EmailController {
     private final EmailServiceImpl mailService;
 
     /* memo : 인증 코드 전송 */
-    @PostMapping("/mailSend")
+    @PostMapping("/Send")
     public String mailSend(@RequestBody @Valid EmailRequestVO emailRequestVO) {
 
         log.info("이메일 인증 요청 보냄");
@@ -28,13 +30,16 @@ public class EmailController {
     }
 
     /* memo : 인증 코드가 일치하는지 확인 */
-    @PostMapping("/mailauthCheck")
+    @PostMapping("/authCheck")
     public String AuthCheck(@RequestBody @Valid EmailCheckDTO emailCheckDto) {
-        boolean Checked = mailService.CheckAuthNum(emailCheckDto.getEmail(), emailCheckDto.getAuthNum());
-        if (Checked) {
+        // 인증 코드 검증
+        boolean isChecked = mailService.CheckAuthNum(emailCheckDto.getEmail(), emailCheckDto.getAuthNum());
+        if (isChecked) {
             return "인증 코드가 일치합니다.";
         } else {
-            throw new NullPointerException("인증 코드가 일치하지 않습니다.");
+            throw new IllegalArgumentException("인증 코드가 일치하지 않습니다.");
         }
     }
+
+
 }

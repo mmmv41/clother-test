@@ -24,7 +24,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 @AllArgsConstructor
 @Builder
 @Table(name = "user")
-public class User {
+public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -72,5 +72,4 @@ public class User {
 
     @Column(name = "image_url", length = 255)
     private String imageUrl;
-
 }

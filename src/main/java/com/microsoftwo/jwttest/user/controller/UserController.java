@@ -1,30 +1,39 @@
 package com.microsoftwo.jwttest.user.controller;
 
+import com.microsoftwo.jwttest.security2.service.AuthService;
+import com.microsoftwo.jwttest.security2.util.SecurityUtil;
+import com.microsoftwo.jwttest.security2.vo.LoginRequestVO;
+import com.microsoftwo.jwttest.security2.vo.LoginResponseVO;
+import com.microsoftwo.jwttest.security2.vo.TokenDTO;
 import com.microsoftwo.jwttest.user.service.UserService;
 import com.microsoftwo.jwttest.user.vo.SignupRequestVO;
 import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/auth")
 public class UserController {
-    private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private final UserService userService;
+    private final AuthService authService;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, AuthService authService) {
         this.userService = userService;
+        this.authService = authService;
     }
 
+    // 기능 : 회원가입
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequestVO signupRequestVO,
                                           BindingResult bindingResult) {
@@ -48,7 +57,24 @@ public class UserController {
         String result = userService.registerUser(signupRequestVO);
         return ResponseEntity.ok(result);
     }
+
+    // 기능 : 로그인
+    @PostMapping("/login")
+    public ResponseEntity<TokenDTO> login(@RequestBody LoginRequestVO loginRequestVO) {
+        return ResponseEntity.ok(authService.login(loginRequestVO));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<LoginResponseVO> findMemberInfoById() {
+        return ResponseEntity.ok(userService.findMemberInfoById(SecurityUtil.getCurrentMemberId()));
+    }
+
+    @GetMapping("/{email}")
+    public ResponseEntity<LoginResponseVO> findMemberInfoByEmail(@PathVariable String email) {
+        return ResponseEntity.ok(userService.findMemberInfoByEmail(email));
+    }
 }
+
 //public class UserController {
 //
 //    private final UserService userService;

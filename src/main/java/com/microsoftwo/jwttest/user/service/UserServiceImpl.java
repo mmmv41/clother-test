@@ -2,8 +2,9 @@ package com.microsoftwo.jwttest.user.service;
 
 import com.microsoftwo.jwttest.email.config.RedisUtil;
 import com.microsoftwo.jwttest.email.exception.CustomException;
+import com.microsoftwo.jwttest.security2.vo.LoginResponseVO;
 import com.microsoftwo.jwttest.user.aggregate.Role;
-import com.microsoftwo.jwttest.user.aggregate.User;
+import com.microsoftwo.jwttest.user.aggregate.UserEntity;
 import com.microsoftwo.jwttest.user.repository.UserRepository;
 import com.microsoftwo.jwttest.user.vo.SignupRequestVO;
 import jakarta.validation.Valid;
@@ -37,7 +38,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public String registerUser(@Valid SignupRequestVO signupRequestVO) throws CustomException {
         // 이메일 중복 체크
-        Optional<User> existingUser = userRepository.findByEmailOrNickname(signupRequestVO.getEmail(),
+        Optional<UserEntity> existingUser = userRepository.findByEmailOrNickname(signupRequestVO.getEmail(),
                 signupRequestVO.getNickname());
         if (existingUser.isPresent()) {
             log.error("회원가입 실패 - 이미 존재하는 닉네임: {}", signupRequestVO.getNickname());
@@ -54,7 +55,7 @@ public class UserServiceImpl implements UserService {
 
         // 회원 저장 로직...
         // DTO → Entity 변환 / 엔티티의 password 컬럼에 암호화 된 값을 추가
-        User newUser = modelMapper.map(signupRequestVO, User.class);
+        UserEntity newUser = modelMapper.map(signupRequestVO, UserEntity.class);
         newUser.setPassword(bCryptPasswordEncoder.encode(signupRequestVO.getPassword())); // 비밀번호 암호화
         newUser.setRole(Role.USER);
 
@@ -62,6 +63,20 @@ public class UserServiceImpl implements UserService {
         redisUtil.deleteData(signupRequestVO.getEmail());
 
         return "회원가입이 완료되었습니다.";
+    }
+
+    @Override
+    public LoginResponseVO findMemberInfoById(Long userId) {
+        return userRepository.findById(userId)
+                .map(LoginResponseVO::of)
+                .orElseThrow(() -> new RuntimeException("로그인 유저 정보가 없습니다."));
+    }
+
+    @Override
+    public LoginResponseVO findMemberInfoByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .map(LoginResponseVO::of)
+                .orElseThrow(() -> new RuntimeException("유저 정보가 없습니다."));
     }
 
     /* memo : login 할때 자동 호출될 메소드 */
